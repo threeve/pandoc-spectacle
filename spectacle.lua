@@ -11,6 +11,8 @@
 -- produce informative error messages if your code contains
 -- syntax errors.
 
+local spectacle = {}
+
 -- Character escaping
 local function escape(s, in_attribute)
   return s:gsub("[<>&\"']",
@@ -60,7 +62,7 @@ end
 local notes = {}
 
 -- Blocksep is used to separate block elements.
-function Blocksep()
+function spectacle.Blocksep()
   return "\n\n"
 end
 
@@ -70,7 +72,7 @@ end
 -- fill variables in a custom lua template.  Or, pass `--template=...`
 -- to pandoc, and pandoc will add do the template processing as
 -- usual.
-function Doc(body, metadata, variables)
+function spectacle.Doc(body, metadata, variables)
   local buffer = {}
   local function add(s)
     table.insert(buffer, s)
@@ -91,65 +93,65 @@ end
 -- items is always an array of strings (the items in a list).
 -- Comments indicate the types of other variables.
 
-function Str(s)
+function spectacle.Str(s)
   return escape(s)
 end
 
-function Space()
+function spectacle.Space()
   return " "
 end
 
-function LineBreak()
+function spectacle.LineBreak()
   return "<br/>"
 end
 
-function Emph(s)
+function spectacle.Emph(s)
   return "<em>" .. s .. "</em>"
 end
 
-function Strong(s)
+function spectacle.Strong(s)
   return "<strong>" .. s .. "</strong>"
 end
 
-function Subscript(s)
+function spectacle.Subscript(s)
   return "<sub>" .. s .. "</sub>"
 end
 
-function Superscript(s)
+function spectacle.Superscript(s)
   return "<sup>" .. s .. "</sup>"
 end
 
-function SmallCaps(s)
+function spectacle.SmallCaps(s)
   return '<span style="font-variant: small-caps;">' .. s .. '</span>'
 end
 
-function Strikeout(s)
+function spectacle.Strikeout(s)
   return '<del>' .. s .. '</del>'
 end
 
-function Link(s, src, tit)
+function spectacle.Link(s, src, tit)
   return "<a href='" .. escape(src,true) .. "' title='" ..
          escape(tit,true) .. "'>" .. s .. "</a>"
 end
 
-function Image(s, src, tit)
+function spectacle.Image(s, src, tit)
   return "<img src='" .. escape(src,true) .. "' title='" ..
          escape(tit,true) .. "'/>"
 end
 
-function Code(s, attr)
+function spectacle.Code(s, attr)
   return "<code" .. attributes(attr) .. ">" .. escape(s) .. "</code>"
 end
 
-function InlineMath(s)
+function spectacle.InlineMath(s)
   return "\\(" .. escape(s) .. "\\)"
 end
 
-function DisplayMath(s)
+function spectacle.DisplayMath(s)
   return "\\[" .. escape(s) .. "\\]"
 end
 
-function Note(s)
+function spectacle.Note(s)
   local num = #notes + 1
   -- insert the back reference right before the final closing tag.
   s = string.gsub(s,
@@ -161,11 +163,11 @@ function Note(s)
             '"><sup>' .. num .. '</sup></a>'
 end
 
-function Span(s, attr)
+function spectacle.Span(s, attr)
   return "<span" .. attributes(attr) .. ">" .. s .. "</span>"
 end
 
-function Cite(s, cs)
+function spectacle.Cite(s, cs)
   local ids = {}
   for _,cit in ipairs(cs) do
     table.insert(ids, cit.citationId)
@@ -174,28 +176,28 @@ function Cite(s, cs)
     "\">" .. s .. "</span>"
 end
 
-function Plain(s)
+function spectacle.Plain(s)
   return s
 end
 
-function Para(s)
+function spectacle.Para(s)
   return "<p>" .. s .. "</p>"
 end
 
 -- lev is an integer, the header level.
-function Header(lev, s, attr)
+function spectacle.Header(lev, s, attr)
   return "<Header size={" .. lev .. "}" .. attributes(attr) ..  ">" .. s .. "</Header>"
 end
 
-function BlockQuote(s)
+function spectacle.BlockQuote(s)
   return "<blockquote>\n" .. s .. "\n</blockquote>"
 end
 
-function HorizontalRule()
+function spectacle.HorizontalRule()
   return "<hr/>"
 end
 
-function CodeBlock(s, attr)
+function spectacle.CodeBlock(s, attr)
   -- If code block has class 'dot', pipe the contents through dot
   -- and base64, and include the base64-encoded png as a data: URL.
   if attr.class and string.match(' ' .. attr.class .. ' ',' dot ') then
@@ -208,7 +210,7 @@ function CodeBlock(s, attr)
   end
 end
 
-function BulletList(items)
+function spectacle.BulletList(items)
   local buffer = {}
   for _, item in pairs(items) do
     table.insert(buffer, "<li>" .. item .. "</li>")
@@ -216,7 +218,7 @@ function BulletList(items)
   return "<ul>\n" .. table.concat(buffer, "\n") .. "\n</ul>"
 end
 
-function OrderedList(items)
+function spectacle.OrderedList(items)
   local buffer = {}
   for _, item in pairs(items) do
     table.insert(buffer, "<li>" .. item .. "</li>")
@@ -225,7 +227,7 @@ function OrderedList(items)
 end
 
 -- Revisit association list STackValue instance.
-function DefinitionList(items)
+function spectacle.DefinitionList(items)
   local buffer = {}
   for _,item in pairs(items) do
     for k, v in pairs(item) do
@@ -238,7 +240,7 @@ end
 
 -- Convert pandoc alignment to something HTML can use.
 -- align is AlignLeft, AlignRight, AlignCenter, or AlignDefault.
-function html_align(align)
+local function html_align(align)
   if align == 'AlignLeft' then
     return 'left'
   elseif align == 'AlignRight' then
@@ -250,7 +252,7 @@ function html_align(align)
   end
 end
 
-function CaptionedImage(src, tit, caption)
+function spectacle.CaptionedImage(src, tit, caption)
    return '<div class="figure">\n<img src="' .. escape(src,true) ..
       '" title="' .. escape(tit,true) .. '"/>\n' ..
       '<p class="caption">' .. caption .. '</p>\n</div>'
@@ -259,7 +261,7 @@ end
 -- Caption is a string, aligns is an array of strings,
 -- widths is an array of floats, headers is an array of
 -- strings, rows is an array of arrays of strings.
-function Table(caption, aligns, widths, headers, rows)
+function spectacle.Table(caption, aligns, widths, headers, rows)
   local buffer = {}
   local function add(s)
     table.insert(buffer, s)
@@ -302,18 +304,29 @@ function Table(caption, aligns, widths, headers, rows)
   return table.concat(buffer,'\n')
 end
 
-function Div(s, attr)
+function spectacle.Div(s, attr)
   return "<div" .. attributes(attr) .. ">\n" .. s .. "</div>"
 end
 
--- The following code will produce runtime warnings when you haven't defined
--- all of the functions you need for the custom writer, so it's useful
--- to include when you're working on a writer.
-local meta = {}
-meta.__index =
-  function(_, key)
-    io.stderr:write(string.format("WARNING: Undefined function '%s'\n",key))
-    return function() return "" end
-  end
-setmetatable(_G, meta)
+local module = ...
+if module == nil then
+  -- if the module name is nil we were simply loaded as a script.
+  -- this is how pandoc loads it, so we do two things:
+  -- - set a metatable index method to bark about missing functions
+  -- - copy the spectacle module table to the global namespace
 
+  -- The following code will produce runtime warnings when you haven't defined
+  -- all of the functions you need for the custom writer, so it's useful
+  -- to include when you're working on a writer.
+  local meta = {}
+  meta.__index =
+    function(_, key)
+      io.stderr:write(string.format("WARNING: Undefined function '%s'\n",key))
+      return function() return "" end
+    end
+  setmetatable(_G, meta)
+  for k,v in pairs(spectacle) do _G[k] = v end
+else
+  -- if required as a module simply return the module table
+  return spectacle
+end
