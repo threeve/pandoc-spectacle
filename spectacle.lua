@@ -130,17 +130,15 @@ function spectacle.Strikeout(s)
 end
 
 function spectacle.Link(s, src, tit)
-  return "<a href='" .. escape(src,true) .. "' title='" ..
-         escape(tit,true) .. "'>" .. s .. "</a>"
+  return "<Link href=\"" .. escape(src,true) .. "\">" .. s .. "</Link>"
 end
 
 function spectacle.Image(s, src, tit)
-  return "<img src='" .. escape(src,true) .. "' title='" ..
-         escape(tit,true) .. "'/>"
+  return "<Image src=\"" .. escape(src,true) .. "\" />"
 end
 
 function spectacle.Code(s, attr)
-  return "<code" .. attributes(attr) .. ">" .. escape(s) .. "</code>"
+  return "<Code" .. attributes(attr) .. ">" .. escape(s) .. "</Code>"
 end
 
 function spectacle.InlineMath(s)
@@ -167,6 +165,7 @@ function spectacle.Span(s, attr)
   return "<span" .. attributes(attr) .. ">" .. s .. "</span>"
 end
 
+-- TODO: this is _not_ the same as spectacle's <Cite> that lives inside a BlockQuote
 function spectacle.Cite(s, cs)
   local ids = {}
   for _,cit in ipairs(cs) do
@@ -181,7 +180,7 @@ function spectacle.Plain(s)
 end
 
 function spectacle.Para(s)
-  return "<p>" .. s .. "</p>"
+  return "<Text>" .. s .. "</Text>"
 end
 
 -- lev is an integer, the header level.
@@ -190,7 +189,7 @@ function spectacle.Header(lev, s, attr)
 end
 
 function spectacle.BlockQuote(s)
-  return "<blockquote>\n" .. s .. "\n</blockquote>"
+  return "<BlockQuote>\n<Quote>" .. s .. "</Quote>\n</BlockQuote>"
 end
 
 function spectacle.HorizontalRule()
@@ -198,32 +197,23 @@ function spectacle.HorizontalRule()
 end
 
 function spectacle.CodeBlock(s, attr)
-  -- If code block has class 'dot', pipe the contents through dot
-  -- and base64, and include the base64-encoded png as a data: URL.
-  if attr.class and string.match(' ' .. attr.class .. ' ',' dot ') then
-    local png = pipe("base64", pipe("dot -Tpng", s))
-    return '<img src="data:image/png;base64,' .. png .. '"/>'
-  -- otherwise treat as code (one could pipe through a highlighter)
-  else
-    return "<pre><code" .. attributes(attr) .. ">" .. escape(s) ..
-           "</code></pre>"
-  end
+  return "<CodePane" .. attributes(attr) .. ">" .. escape(s) .. "</CodePane>"
 end
 
 function spectacle.BulletList(items)
   local buffer = {}
   for _, item in pairs(items) do
-    table.insert(buffer, "<li>" .. item .. "</li>")
+    table.insert(buffer, "<ListItem>" .. item .. "</ListItem>")
   end
-  return "<ul>\n" .. table.concat(buffer, "\n") .. "\n</ul>"
+  return "<List>\n" .. table.concat(buffer, "\n") .. "\n</List>"
 end
 
 function spectacle.OrderedList(items)
   local buffer = {}
   for _, item in pairs(items) do
-    table.insert(buffer, "<li>" .. item .. "</li>")
+    table.insert(buffer, "<ListItem>" .. item .. "</ListItem>")
   end
-  return "<ol>\n" .. table.concat(buffer, "\n") .. "\n</ol>"
+  return "<List>\n" .. table.concat(buffer, "\n") .. "\n</List>"
 end
 
 -- Revisit association list STackValue instance.
