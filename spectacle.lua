@@ -184,7 +184,7 @@ end
 
 -- lev is an integer, the header level.
 function Header(lev, s, attr)
-  return "<h" .. lev .. attributes(attr) ..  ">" .. s .. "</h" .. lev .. ">"
+  return "<Header size={" .. lev .. "}" .. attributes(attr) ..  ">" .. s .. "</Header>"
 end
 
 function BlockQuote(s)
